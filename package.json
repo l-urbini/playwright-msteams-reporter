@@ -1,6 +1,6 @@
 {
   "name": "playwright-msteams-reporter-conditional",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Microsoft Teams reporter for Playwright which allows you to send notifications about the status of your E2E tests.",
   "main": "dist/index.js",
   "scripts": {
