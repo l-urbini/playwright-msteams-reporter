@@ -13,5 +13,6 @@ test.describe.serial("Setup", () => {
   });
   test("Fake timeout 1", async () => {
     await page.waitForURL("ssss");
+    expect(1).toBe(2)
   });
 });

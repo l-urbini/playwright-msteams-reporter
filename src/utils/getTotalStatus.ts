@@ -1,6 +1,20 @@
 import { Suite } from "@playwright/test/reporter";
 import { TestStatuses } from "../models";
 
+
+export const getFailedTests = (suites: Suite[]): string[] => {
+  let ret: string[] = []
+  for (const suite of suites) {
+    suite.allTests().map((test) => {
+      const outcome = test.outcome()
+      if (outcome === 'unexpected')
+        ret.push(test.parent.title + ' - ' + test.title)
+    });
+  }
+
+  return ret
+}
+
 export const getTotalStatus = (suites: Suite[]): TestStatuses => {
   let total = {
     passed: 0,

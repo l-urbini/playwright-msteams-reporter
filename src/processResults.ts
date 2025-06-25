@@ -2,6 +2,7 @@ import { Suite } from "@playwright/test/reporter";
 import { MsTeamsReporterOptions } from ".";
 import {
   createTableRow,
+  getFailedTests,
   getMentions,
   getNotificationBackground,
   getNotificationColor,
@@ -10,6 +11,8 @@ import {
   validateWebhookUrl,
 } from "./utils";
 import { BaseAdaptiveCard, BaseTable } from "./constants";
+import fetch from 'node-fetch'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 
 export const processResults = async (
   suite: Suite | undefined,
@@ -37,6 +40,7 @@ export const processResults = async (
   const table = structuredClone(BaseTable);
 
   const totalStatus = getTotalStatus(suite.suites);
+  const failedTests = getFailedTests(suite.suites);
   const totalTests = suite.allTests().length;
   const isSuccess = totalStatus.failed === 0;
 
@@ -72,6 +76,25 @@ export const processResults = async (
       { style: "attention" }
     )
   );
+  if (failedTests.length > 20) {
+    table.rows.push(
+      createTableRow("Failed more than 20 tests, see Jenkins pipeline for further details",
+        '',
+        { style: "attention" }
+      )
+    );
+  } else {
+    for (const failedTest of failedTests) {
+      table.rows.push(
+        createTableRow(failedTest,
+          '',
+          { style: "attention" }
+        )
+      );
+    }
+  }
+
+
   table.rows.push(
     createTableRow(
       `${options.enableEmoji ? "⏭️ " : ""}Skipped`,
@@ -194,12 +217,15 @@ export const processResults = async (
     console.log(body);
   }
 
+  const agent = new HttpsProxyAgent('http://enc-proxy-mi.enc.local:8080');
+
   const response = await fetch(options.webhookUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body,
+    agent,
   });
 
   if (response.ok) {
